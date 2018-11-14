@@ -1,0 +1,92 @@
+add_shortcode( 'show-price-data', 'show_price_data_fn' );
+
+function show_price_data_fn() {
+    ob_start();
+
+    $args = array(
+    'posts_per_page'   => -1,
+    'post_type'        => 'eiendom',
+    'post_status'      => 'publish',   
+    );
+
+    $posts_array = get_posts( $args );
+    echo "<ol>";
+    foreach ( $posts_array as $post ) {
+        $post_id = $post->ID;
+        $post_title = $post->post_title;
+        $solgt_for  = get_post_meta($post_id, 'wpcf-solgt-for', true);
+        $overdratt_for  = get_post_meta($post_id, 'wpcf-overdratt-for', true);
+        $andel_overdratt_for  = get_post_meta($post_id, 'wpcf-andel-overdratt-for', true);
+        $sum  = get_post_meta($post_id, 'wpcf-sum', true);
+
+        if (empty($solgt_for)) {
+            $solgt_for = 0;
+        }
+
+        if (empty($overdratt_for)) {
+            $overdratt_for = 0;
+        }
+
+        if (empty($andel_overdratt_for)) {
+            $andel_overdratt_for = 0;
+        }
+        
+ 
+        // remove empty spaces from the prices
+        $num_solgt_for = str_replace(' ', '', $solgt_for);
+        $num_overdratt_for = str_replace(' ', '', $overdratt_for);
+        $num_andel_overdratt_for = str_replace(' ', '', $andel_overdratt_for);
+
+        if ($num_solgt_for != 0) {
+            update_post_meta( $post_id, 'wpcf-solgt-for', $num_solgt_for, $solgt_for );
+        }
+
+        if ($num_overdratt_for != 0) {
+            update_post_meta( $post_id, 'wpcf-overdratt-for', $num_overdratt_for, $overdratt_for );
+        }
+
+        if ($num_andel_overdratt_for != 0) {
+            update_post_meta( $post_id, 'wpcf-andel-overdratt-for', $num_andel_overdratt_for, $andel_overdratt_for );
+        }
+        
+     
+        // get sum of all prices
+        $count = $num_solgt_for + $num_overdratt_for + $num_andel_overdratt_for;
+
+             
+        // update the sum in the Sum custom field
+        update_post_meta( $post_id, 'wpcf-sum', $count );
+
+        $solgt_for_new  = get_post_meta($post_id, 'wpcf-solgt-for', true);
+        $overdratt_for_new  = get_post_meta($post_id, 'wpcf-overdratt-for', true);
+        $andel_overdratt_for_new  = get_post_meta($post_id, 'wpcf-andel-overdratt-for', true);
+        $sum_new  = get_post_meta($post_id, 'wpcf-sum', true);
+    ?>
+    <li>
+    <table style="width:100%">
+        <tr>
+            <th width="15">Post ID</th>
+            <th width="25">Post title</th> 
+            <th width="15">Solgt for</th>
+            <th width="15">Overdratt for</th>
+            <th width="15">Andel overdratt for</th>
+            <th width="15">Sum</th>
+        </tr>
+        <tr>
+            <td><?php echo $post_id; ?></td>
+            <td><?php echo $post_title; ?></td>
+            <td><?php echo $solgt_for_new; ?></td>
+            <td><?php echo $overdratt_for_new; ?></td>
+            <td><?php echo $andel_overdratt_for_new; ?></td>
+            <td><?php echo $sum_new; ?></td>
+        </tr>
+    </table>
+    <hr>
+    </li>
+
+
+    <?php
+    }
+    echo "</ol>";
+    return ob_get_clean();
+}
